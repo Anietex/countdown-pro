@@ -26,6 +26,7 @@ class Stopwatch extends Component {
 
     componentDidMount() {
         this.initMaterial();
+        this.getSaveTime();
     }
 
 
@@ -62,21 +63,17 @@ class Stopwatch extends Component {
           }else {
               if(!this.state.paused){
                   totalTime-=1;
-
                   if(totalTime <= timeout){
                       this.setTimeoutColor();
                   }else if(totalTime <= warning ){
                       this.setWarningColor();
                   }
-
                   minutes = Math.floor(totalTime/60);
                   seconds = totalTime%60;
-
-
                   this.setState({seconds,minutes},()=> { this.initMaterial() })
               }
           }
-        },100)
+        },1000)
 
 
 
@@ -87,7 +84,20 @@ class Stopwatch extends Component {
             localStorage.setItem('total-time',this.state.totalTime);
             this.stopTime();
         })
+    }
 
+    getSaveTime(){
+        let totalTime =  localStorage.getItem('total-time');
+        if(totalTime){
+            totalTime = parseInt(totalTime)
+            this.setState({
+                totalTime: totalTime,
+                setting: {
+                    minutes: Math.floor(totalTime/60),
+                    seconds: totalTime%60
+                }
+            })
+        }
     }
 
     pauseTime=()=>{
@@ -162,11 +172,11 @@ class Stopwatch extends Component {
                         <h4>Set Timeout</h4>
                         <div className="row">
                             <div className="input-field col s6">
-                                <input  id="minute"  type="number" className="validate" name='minutes' onChange={(e)=>this.handleChange(e)}/>
+                                <input  id="minute"  type="number" value={this.state.setting.minutes} className="validate" name='minutes' onChange={(e)=>this.handleChange(e)}/>
                                     <label htmlFor="minute">Minutes</label>
                             </div>
                             <div className="input-field col s6">
-                                <input id="seconds" type="number" className="validate" name='seconds' onChange={(e)=>this.handleChange(e)}/>
+                                <input id="seconds" type="number" value={this.state.setting.seconds} className="validate" name='seconds' onChange={(e)=>this.handleChange(e)}/>
                                     <label htmlFor="seconds">Seconds</label>
                             </div>
                         </div>
@@ -217,7 +227,6 @@ class Stopwatch extends Component {
                         }
                         <li><a className="btn-floating blue" onClick={this.fullscreen}><i className="material-icons">fullscreen</i></a></li>
                         <li><a className="btn-floating yellow darken-1" onClick={this.openModal}><i className="material-icons">settings</i></a></li>
-
                     </ul>
                 </div>
             </div>
