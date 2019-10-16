@@ -4,13 +4,13 @@ import React, {Component} from 'react'
 class Stopwatch extends Component {
 
     state = {
-        minute: 0,
+        minutes: 0,
         seconds:0,
         miliseconds:0,
         paused: false,
         running: false,
         stopped: false,
-        totalTime: 3,
+        totalTime: 180,
         setting: {
             minutes: 0,
             seconds: 0
@@ -35,29 +35,30 @@ class Stopwatch extends Component {
 
     startTime =()=>{
        this.setStartColor();
-        let totalTime = this.state.totalTime*60;
+        let totalTime = this.state.totalTime;
         let seconds = 0;
-        let minute =0;
+        let minutes =0;
 
-        let breakPoinnts = totalTime/3;
+        let breakPoints = totalTime/3;
 
-        let warning = breakPoinnts*2;
-        let timeout = breakPoinnts;
+        let warning = breakPoints*2;
+        let timeout = (totalTime/100)*5;
 
         this.setState({ running: true},() => {this.initMaterial()});
 
         let handler =  setInterval(() => {
 
-          if(totalTime < 1 || this.state.stopped){
+          if(totalTime < 1 || !this.state.running){
               clearInterval(handler);
-              minute = 0;
+              minutes = 0;
               seconds = 0;
               this.setState({
                   stopped: false,
                   running: false,
                   seconds,
-                  minute
+                  minutes
               },() => {this.initMaterial()});
+              this.setDefaultColor();
           }else {
               if(!this.state.paused){
                   totalTime-=1;
@@ -68,13 +69,11 @@ class Stopwatch extends Component {
                       this.setWarningColor();
                   }
 
-                  if(seconds === 59){
-                      minute+=1;
-                      seconds = 0
-                  }else {
-                      seconds+=1;
-                  }
-                  this.setState({seconds,minute},()=> { this.initMaterial() })
+                  minutes = Math.floor(totalTime/60);
+                  seconds = totalTime%60;
+
+
+                  this.setState({seconds,minutes},()=> { this.initMaterial() })
               }
           }
         },100)
@@ -83,12 +82,23 @@ class Stopwatch extends Component {
 
     }
 
+    setTotalTime=()=>{
+        this.setState({totalTime:this.state.setting.minutes*60 + parseInt(this.state.setting.seconds)}, () => {
+            localStorage.setItem('total-time',this.state.totalTime);
+            this.stopTime();
+        })
+
+    }
+
     pauseTime=()=>{
         this.setState({paused: true}, () => {this.initMaterial()})
     }
 
     stopTime =()=>{
-        this.setState({stopped: true,running: false,paused: false}, () => {this.initMaterial()})
+        this.setState({running: false,paused: false}, () => {
+            this.initMaterial()
+            this.setDefaultColor()
+        })
     }
 
     resetTime(){
@@ -133,8 +143,14 @@ class Stopwatch extends Component {
     }
 
     setTimeoutColor =()=> {
-        document.querySelector('.stopwatch').style.backgroundColor = '#FF5252'
+        document.querySelector('.stopwatch').classList.add('blink')
         document.querySelector('.stopwatch').style.color = '#fff'
+    }
+
+    setDefaultColor(){
+        document.querySelector('.stopwatch').style.backgroundColor = 'unset'
+        document.querySelector('.stopwatch').style.color = 'unset'
+        document.querySelector('.stopwatch').classList.remove('blink')
 
     }
 
@@ -146,17 +162,17 @@ class Stopwatch extends Component {
                         <h4>Set Timeout</h4>
                         <div className="row">
                             <div className="input-field col s6">
-                                <input  id="minute" type="number" className="validate" name='minute' onChange={(e)=>this.handleChange(e)}/>
+                                <input  id="minute"  type="number" className="validate" name='minutes' onChange={(e)=>this.handleChange(e)}/>
                                     <label htmlFor="minute">Minutes</label>
                             </div>
                             <div className="input-field col s6">
-                                <input id="seconds" type="text" className="validate" name='seconds' onChange={(e)=>this.handleChange(e)}/>
+                                <input id="seconds" type="number" className="validate" name='seconds' onChange={(e)=>this.handleChange(e)}/>
                                     <label htmlFor="seconds">Seconds</label>
                             </div>
                         </div>
                     </div>
                     <div className="modal-footer">
-                        <button  className="modal-close waves-effect waves-green btn">Save</button>
+                        <button  className="modal-close waves-effect waves-green btn" onClick={this.setTotalTime}>Save</button>
                     </div>
                 </div>
 
@@ -164,7 +180,7 @@ class Stopwatch extends Component {
 
                 <div className='stopwatch'>
                     <div className='time'>
-                        <span className='minute'>{this.formatNumber(this.state.minute)}</span>:
+                        <span className='minute'>{this.formatNumber(this.state.minutes)}</span>:
                         <span className='seconds'>{this.formatNumber(this.state.seconds)}</span>
                         {/*<span className='miliseconds'>{this.formatNumber(this.state.miliseconds)}</span>*/}
                     </div>

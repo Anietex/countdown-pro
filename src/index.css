@@ -19,3 +19,30 @@
 .stopwatch .miliseconds{
   font-size: .5em !important;
 }
+
+.blink{
+    animation-name: blink;
+    animation-duration: 200ms;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    animation-direction: alternate-reverse;
+
+}
+
+
+@keyframes blink {
+
+    0%{
+        background-color: #FF5252;
+    }
+
+
+    50%{
+        background-color: #e57373;
+    }
+
+    100%{
+
+        background-color: #ffcdd2;
+    }
+}
